@@ -1,23 +1,23 @@
-package com.example.babyhands.service;
+package com.example.babyhands.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
 
-@Service
-public class JwtService {
+@Component
+public class TokenProvider {
 
     private final SecretKey key;
     private final long accessTokenExpiration;
     private final long refreshTokenExpiration;
 
     // 생성자를 통해 application.yml의 값 주입
-    public JwtService(
+    public TokenProvider(
             @Value("${app.auth.token-secret}") String secretKey,
             @Value("${app.auth.access-token-expiration-msec}") long accessTokenExpiration,
             @Value("${app.auth.refresh-token-expiration-msec}") long refreshTokenExpiration) {
@@ -30,9 +30,9 @@ public class JwtService {
     }
 
     // Access Token 생성
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(String loginId) {
         return Jwts.builder()
-                .subject(username)
+                .subject(loginId)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(key)
@@ -40,9 +40,9 @@ public class JwtService {
     }
 
     // Refresh Token 생성
-    public String generateRefreshToken(String username) {
+    public String generateRefreshToken(String loginId) {
         return Jwts.builder()
-                .subject(username)
+                .subject(loginId)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(key)

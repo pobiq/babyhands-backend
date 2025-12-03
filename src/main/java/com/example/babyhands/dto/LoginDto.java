@@ -1,3 +1,5 @@
+package com.example.babyhands.dto;
+
 import com.example.babyhands.entity.MemberEntity;
 
 import lombok.AllArgsConstructor;
@@ -21,21 +23,6 @@ public class LoginDto {
             return MemberEntity.builder()
                 .loginId(loginId)
                 .password(password)
-                .build();
-        }
-    }
-
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Response {
-
-        String accessToken;
-        
-        public LoginResponse.Response toResponse(String accessToken) {
-            return LoginResponse.builder()
-                .accessToken(accessToken)
                 .build();
         }
     }

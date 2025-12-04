@@ -1,5 +1,6 @@
 package com.example.babyhands.controller;
 
+import com.example.babyhands.entity.MemberEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,10 +20,11 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDto.Request request) {
+    public ResponseEntity<LoginDto.Response> login(@RequestBody LoginDto.Request request) {
 
-        String accessToken = memberService.login(request);
-        return ResponseEntity.ok(accessToken);
+        LoginDto.Response result = memberService.login(request);
+
+        return ResponseEntity.ok(result);
     }
 
     

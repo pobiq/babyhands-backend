@@ -1,5 +1,6 @@
 package com.example.babyhands.service;
 
+import com.example.babyhands.dto.LoginDto;
 import com.example.babyhands.dto.LoginDto.Request;
 import com.example.babyhands.entity.MemberEntity;
 import com.example.babyhands.repository.MemberRepository;
@@ -22,7 +23,7 @@ public class MemberService {
      * @return accessToken
      * @throws RuntimeException 로그인 실패 시 예외 발생
      */
-    public String login(Request request) {
+    public LoginDto.Response login(Request request) {
         // 1. loginId로 회원 조회
         Optional<MemberEntity> memberOpt = memberRepository.findByLoginId(request.getLoginId());
         
@@ -36,11 +37,12 @@ public class MemberService {
         if (!member.getPassword().equals(request.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
-        
-        // 3. 로그인 성공 시 accessToken 생성 및 반환
+
         String accessToken = tokenProvider.generateAccessToken(member.getLoginId());
-        
-        return accessToken;
+
+        LoginDto.Response result = LoginDto.Response.of(member, accessToken);
+
+        return result;
     }
 
     

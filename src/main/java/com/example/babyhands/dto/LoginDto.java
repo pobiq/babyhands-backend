@@ -18,12 +18,23 @@ public class LoginDto {
     public static class Request {
         private String loginId;
         private String password;
+    }
 
-        public MemberEntity toEntity() {
-            return MemberEntity.builder()
-                .loginId(loginId)
-                .password(password)
-                .build();
+
+    @Getter
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Response {
+        private String nickname;
+        private String accessToken;
+
+        public static Response of(MemberEntity entity, String accessToken) {
+            return Response.builder()
+                    .accessToken(accessToken)
+                    .nickname(entity.getNickname())
+                    .build();
         }
     }
 

@@ -20,7 +20,7 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/babyhands}
 
     # 3. DB 사용자 이름
-    username: ${DB_USERNAME:test}
+    username: ${DB_USERNAME:}
 
     # 4. DB 비밀번호
     password: ${DB_PASSWORD:}

@@ -33,7 +33,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "member")
+@Table(name = "MEMBER")
 @EntityListeners(AuditingEntityListener.class)
 @ToString
 @Builder

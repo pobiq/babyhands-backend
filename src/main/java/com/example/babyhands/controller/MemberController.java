@@ -27,5 +27,11 @@ public class MemberController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        memberService.logout();
+        return ResponseEntity.ok("로그아웃되었습니다.");
+    }
+
     
 }

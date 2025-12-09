@@ -19,14 +19,6 @@ public class MemberController {
     
     private final MemberService memberService;
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginDto.Response> login(@RequestBody LoginDto.Request request) {
-
-        LoginDto.Response result = memberService.login(request);
-
-        return ResponseEntity.ok(result);
-    }
-
     @PostMapping("/logout")
     public ResponseEntity<String> logout() {
         memberService.logout();

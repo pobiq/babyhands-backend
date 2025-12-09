@@ -30,7 +30,7 @@ public class TestController {
 
     @PostMapping("/submit")
     public ResponseEntity<?> submitTest(
-            @RequestBody TestDto.Request request,
+            @RequestBody List<TestDto.Request> request,
             @AuthenticationPrincipal MemberEntity member) {
         
         String result = testService.submitTest(request, member);

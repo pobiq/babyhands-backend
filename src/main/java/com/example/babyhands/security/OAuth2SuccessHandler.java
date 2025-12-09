@@ -1,19 +1,23 @@
 package com.example.babyhands.security;
 
-import com.example.babyhands.dto.LoginDto;
+import com.example.babyhands.entity.AttendanceEntity;
 import com.example.babyhands.entity.MemberEntity;
+import com.example.babyhands.repository.AttendanceRepository;
 import com.example.babyhands.repository.MemberRepository;
-import com.example.babyhands.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -22,9 +26,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final MemberService memberService;
     private final TokenProvider tokenProvider;
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AttendanceRepository attendanceRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -61,18 +66,36 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         
         // 소셜 로그인 처리 (회원이 없으면 자동 가입)
         MemberEntity member = processSocialLogin(email, name, nickname, registrationId);
-        
+
+        // 로그인 성공 시 출석 체크(하루에 한번만)
+        if(!attendanceRepository.existsByLoginDateAndMemberId(LocalDate.now(), member.getId())) {
+            AttendanceEntity attendance = AttendanceEntity.builder()
+                    .loginDate(LocalDate.now())
+                    .member(member)
+                    .build();
+
+            attendanceRepository.save(attendance);
+        }
+
         // JWT 토큰 생성
         String accessToken = tokenProvider.generateAccessToken(member.getLoginId());
         
-        // 프론트엔드로 리다이렉트 (토큰을 쿼리 파라미터로 전달)
-        String redirectUrl = String.format(
-            "http://localhost:5173/login/oauth2/callback?token=%s&nickname=%s",
-            accessToken,
-            member.getNickname()
+        // 닉네임을 URL 인코딩 (한글 등 특수문자 처리)
+        String encodedNickname = URLEncoder.encode(
+            member.getNickname() != null ? member.getNickname() : "", 
+            StandardCharsets.UTF_8
         );
         
-        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+        // UriComponentsBuilder로 안전하게 URL 생성 및 인코딩
+        String redirectUrl = UriComponentsBuilder
+            .fromUriString("http://localhost:5173/login/oauth2/callback")
+            .queryParam("token", accessToken)
+            .queryParam("nickname", member.getNickname() != null ? member.getNickname() : "")
+            .build()
+            .encode(StandardCharsets.UTF_8)
+            .toUriString();
+
+        response.sendRedirect(redirectUrl);
     }
 
     /**
@@ -87,9 +110,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             return memberOpt.get();
         } else {
             // 신규 회원이면 자동 가입
+            // 비밀번호를 BCrypt로 해시화하여 저장
+            String rawPassword = "SOCIAL_LOGIN_" + provider;
+            String encodedPassword = passwordEncoder.encode(rawPassword);
+            
             MemberEntity newMember = MemberEntity.builder()
                     .loginId(email)
-                    .password("SOCIAL_LOGIN_" + provider) // 소셜 로그인은 비밀번호 불필요
+                    .password(encodedPassword) // 해시화된 비밀번호 저장
                     .email(email)
                     .name(name)
                     .nickname(nickname != null ? nickname : name)
@@ -109,7 +136,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 return (String) attributes.get("email");
             case "kakao":
                 Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-                return kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
+                String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
+                // 카카오의 경우 로그인시 email이 없음
+                if (email == null || email.isEmpty()) {
+                    Object id = attributes.get("id");
+                    return id + "@kakao.com";
+                }
+                return email;
             case "naver":
                 Map<String, Object> naverResponse = (Map<String, Object>) attributes.get("response");
                 return naverResponse != null ? (String) naverResponse.get("email") : null;

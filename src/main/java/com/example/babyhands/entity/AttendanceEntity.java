@@ -23,7 +23,7 @@ public class AttendanceEntity {
     private Long id;
 
     @Column(nullable = false)
-    private LocalDate login_date;
+    private LocalDate loginDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false)

@@ -33,6 +33,9 @@ dependencies {
 	// Spring Boot OAuth 2.0 Client Starter (Google, Naver, Kakao 등 연동 지원)
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
+    // Cloud SQL PostgreSQL 소켓 팩토리
+    implementation 'com.google.cloud.sql:postgres-socket-factory:1.15.0'
+
 	// JJWT Core
 	implementation 'io.jsonwebtoken:jjwt-api:0.13.0' // 버전은 최신 안정 버전으로 변경 가능
 
@@ -44,7 +47,6 @@ dependencies {
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'

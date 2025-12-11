@@ -19,10 +19,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.util.Arrays;
 import java.util.List;
 
-@Configuration
-@EnableWebSecurity
+@Configuration               // 1. 스프링 컨테이너에 자동 스캔되기 위한 설정
+@EnableWebSecurity           // 2. Security 기능 활성화
 public class SecurityConfig {
 
+    // Security 기본 필터 대신에 내가 만드는 나만의 필터를 제작!
+    // Bean --> 직접적인 제어가 어려운 라이브러리를 사용할 때, 많이 사용
+    // --> 메소드의 결과가 반환되면서, 자동으로 SC에 해당하는 객체가 생성되는 특징
+
+    // 3. 수동으로 Bean 생성
     @Bean
     public SecurityFilterChain filterChain(
         HttpSecurity http, 
@@ -51,7 +56,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // React 개발 서버
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "babyhands-front.vercel.app")); // React 개발 서버, 운영 서버
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
